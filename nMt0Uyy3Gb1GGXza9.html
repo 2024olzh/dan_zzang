@@ -1,0 +1,463 @@
+<html><head><base href="https://" /><style>
+.board {
+  display: grid;
+  grid-template-columns: repeat(10, 120px);
+  gap: 10px;
+  margin: 50px auto;
+  max-width: 1300px;
+  background: linear-gradient(45deg, #FFE5A8, #FFD466);
+  padding: 30px;
+  border-radius: 30px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+}
+
+.cell {
+  width: 120px;
+  height: 120px;
+  border: 5px solid #FFA726;
+  border-radius: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: inset 0 0 20px rgba(255, 167, 38, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+body {
+  background: #FFEB3B;
+  background-image: radial-gradient(circle at 10px 10px, #FFE082 1px, transparent 0);
+  background-size: 30px 30px;
+}
+
+.player1 {
+  width: 80px;
+  height: 80px;
+  transition: all 0.5s ease;
+}
+
+.player2 {
+  width: 80px;
+  height: 80px;
+  transition: all 0.5s ease;
+}
+
+.bear {
+  width: 80px;
+  height: 80px;
+}
+
+.roulette-container {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+}
+
+.dice-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  text-align: center;
+}
+
+.roulette, .dice {
+  width: 100px;
+  height: 100px;
+  background: white;
+  border: 4px solid #FFA726;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  margin-bottom: 10px;
+  transition: transform 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  background: linear-gradient(135deg, #FFF9C4, #FFFFFF);
+}
+
+.button {
+  padding: 10px 20px;
+  font-size: 18px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.button.red {
+  background-color: #ff4444;
+}
+
+.button.red:hover {
+  background-color: #ff0000;
+}
+
+.button:hover {
+  background-color: #45a049;
+}
+
+.button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.roulette.spinning {
+  animation: spin 1s linear;
+}
+
+.dice.rolling {
+  animation: roll 1s linear;
+}
+
+.turn-indicator {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  font-size: 24px;
+  font-weight: bold;
+  background: #FFF9C4;
+  padding: 15px 25px;
+  border-radius: 15px;
+  border: 3px solid #FFA726;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.honey-pot {
+  width: 80px;
+  height: 80px;
+}
+
+.quiz-modal {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #FFF9C4;
+  padding: 30px;
+  border-radius: 20px;
+  border: 4px solid #FFA726;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+  text-align: center;
+}
+
+.quiz-modal input {
+  padding: 10px;
+  font-size: 18px;
+  border: 2px solid #FFA726;
+  border-radius: 10px;
+  margin: 10px 0;
+}
+
+.win-modal {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #FFF9C4;
+  padding: 40px;
+  border-radius: 20px;
+  border: 4px solid #FFA726;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+  text-align: center;
+  font-size: 36px;
+  z-index: 1000;
+  animation: popIn 0.5s ease-out;
+}
+
+@keyframes popIn {
+  0% { transform: translate(-50%, -50%) scale(0); }
+  100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(1080deg); }
+}
+
+@keyframes roll {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Add new styles for decorative elements */
+.decoration {
+  position: fixed;
+  z-index: -1;
+}
+
+.tree-left {
+  left: 50px;
+  bottom: 20px;
+  top: auto;
+  transform: none;
+}
+
+.tree-right {
+  right: 50px;
+  bottom: 20px;
+  top: auto;
+  transform: scaleX(-1);
+}
+
+.flower-1 {
+  left: 200px;
+  top: 100px;
+  animation: sway 3s ease-in-out infinite;
+}
+
+.flower-2 {
+  right: 200px;
+  bottom: 100px;
+  animation: sway 3s ease-in-out infinite reverse;
+}
+
+@keyframes sway {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(5deg); }
+}
+</style></head>
+<body>
+<div class="turn-indicator" id="turnIndicator">플레이어 1의 차례</div>
+<div class="board" id="gameBoard"></div>
+
+<div class="roulette-container">
+  <div class="roulette" id="roulette">?</div>
+  <button class="button" onclick="spinRoulette()">룰렛 돌리기</button>
+</div>
+
+<div class="dice-container">
+  <div class="dice" id="dice">?</div>
+  <button class="button red" id="diceButton" onclick="rollDice()" disabled>주사위 굴리기</button>
+</div>
+
+<div class="quiz-modal" id="quizModal">
+  <h2>퀴즈</h2>
+  <p id="quizQuestion"></p>
+  <input type="number" id="quizAnswer" min="0" max="36">
+  <button class="button" onclick="checkAnswer()">정답 제출</button>
+</div>
+
+<div class="win-modal" id="winModal">
+  <h1>🎉 축하합니다! 🎉</h1>
+  <p id="winText"></p>
+  <button class="button" onclick="resetGame()">다시 시작</button>
+</div>
+
+<svg class="decoration tree-left" width="200" height="300" viewBox="0 0 200 300">
+  <path d="M100,20 C60,100 20,150 20,220 C20,270 80,290 100,290 C120,290 180,270 180,220 C180,150 140,100 100,20" fill="#8BC34A"/>
+  <rect x="90" y="220" width="20" height="80" fill="#795548"/>
+</svg>
+
+<svg class="decoration tree-right" width="200" height="300" viewBox="0 0 200 300">
+  <path d="M100,20 C60,100 20,150 20,220 C20,270 80,290 100,290 C120,290 180,270 180,220 C180,150 140,100 100,20" fill="#8BC34A"/>
+  <rect x="90" y="220" width="20" height="80" fill="#795548"/>
+</svg>
+
+<svg class="decoration flower-1" width="100" height="100" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="15" fill="#FF69B4"/>
+  <circle cx="30" cy="50" r="15" fill="#FF69B4"/>
+  <circle cx="70" cy="50" r="15" fill="#FF69B4"/>
+  <circle cx="50" cy="30" r="15" fill="#FF69B4"/>
+  <circle cx="50" cy="70" r="15" fill="#FF69B4"/>
+  <circle cx="50" cy="50" r="10" fill="#FFD700"/>
+</svg>
+
+<svg class="decoration flower-2" width="100" height="100" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="15" fill="#FF69B4"/>
+  <circle cx="30" cy="50" r="15" fill="#FF69B4"/>
+  <circle cx="70" cy="50" r="15" fill="#FF69B4"/>
+  <circle cx="50" cy="30" r="15" fill="#FF69B4"/>
+  <circle cx="50" cy="70" r="15" fill="#FF69B4"/>
+  <circle cx="50" cy="50" r="10" fill="#FFD700"/>
+</svg>
+
+<script>
+const gameBoard = document.getElementById('gameBoard');
+const roulette = document.getElementById('roulette');
+const dice = document.getElementById('dice');
+const turnIndicator = document.getElementById('turnIndicator');
+const quizModal = document.getElementById('quizModal');
+const diceButton = document.getElementById('diceButton');
+let currentPositionP1 = 0;
+let currentPositionP2 = 0;
+let currentPlayer = 1;
+let player1 = null;
+let player2 = null;
+let currentRouletteNumber = 0;
+
+const bearSVG1 = `<svg class="bear" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="40" fill="#FFA07A"/>
+  <ellipse cx="35" cy="40" rx="8" ry="10" fill="#FF7F50"/>
+  <ellipse cx="65" cy="40" rx="8" ry="10" fill="#FF7F50"/>
+  <circle cx="50" cy="60" r="6" fill="#FF7F50"/>
+  <circle cx="35" cy="38" r="4" fill="white"/>
+  <circle cx="65" cy="38" r="4" fill="white"/>
+  <path d="M45,55 Q50,60 55,55" stroke="#FF7F50" stroke-width="2" fill="none"/>
+  <path d="M30,10 Q40,0 45,10 L45,30" fill="#FFA07A" />
+  <path d="M70,10 Q60,0 55,10 L55,30" fill="#FFA07A" />
+</svg>`;
+
+const bearSVG2 = `<svg class="bear" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="45" fill="#98FB98"/>
+  <ellipse cx="35" cy="40" rx="10" ry="12" fill="#3CB371"/>
+  <ellipse cx="65" cy="40" rx="10" ry="12" fill="#3CB371"/>
+  <circle cx="50" cy="60" r="8" fill="#3CB371"/>
+  <circle cx="35" cy="38" r="4" fill="white"/>
+  <circle cx="65" cy="38" r="4" fill="white"/>
+  <path d="M45,55 Q50,60 55,55" stroke="#3CB371" stroke-width="2" fill="none"/>
+  <circle cx="25" cy="25" r="15" fill="#98FB98"/>
+  <circle cx="75" cy="25" r="15" fill="#98FB98"/>
+  <circle cx="25" cy="25" r="10" fill="#3CB371"/>
+  <circle cx="75" cy="25" r="10" fill="#3CB371"/>
+</svg>`;
+
+const honeyPotSVG = `<svg class="honey-pot" viewBox="0 0 100 100">
+  <path d="M30,30 Q50,10 70,30 L80,80 Q50,90 20,80 Z" fill="#FFD700"/>
+  <path d="M40,20 Q50,10 60,20 L65,30 Q50,35 35,30 Z" fill="#FFA500"/>
+</svg>`;
+
+function createBoard() {
+  const cells = [];
+  for (let i = 0; i < 30; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    cell.innerHTML = i === 29 ? honeyPotSVG : (i + 1);
+    cells.push(cell);
+  }
+  
+  for (let i = 0; i < 3; i++) {
+    const row = cells.slice(i * 10, (i + 1) * 10);
+    if (i % 2 === 1) row.reverse();
+    row.forEach(cell => gameBoard.appendChild(cell));
+  }
+
+  player1 = document.createElement('div');
+  player1.className = 'player1';
+  player1.innerHTML = bearSVG1;
+  
+  player2 = document.createElement('div');
+  player2.className = 'player2';
+  player2.innerHTML = bearSVG2;
+  
+  gameBoard.children[0].appendChild(player1);
+  gameBoard.children[0].appendChild(player2);
+}
+
+function spinRoulette() {
+  roulette.classList.add('spinning');
+  diceButton.disabled = true;
+  
+  setTimeout(() => {
+    currentRouletteNumber = Math.floor(Math.random() * 11) + 2;
+    roulette.textContent = currentRouletteNumber;
+    roulette.classList.remove('spinning');
+    showQuiz();
+  }, 1000);
+}
+
+function showQuiz() {
+  document.getElementById('quizQuestion').textContent = 
+    `서로 다른 주사위 2개를 굴렸을 때, 두 눈의 합이 ${currentRouletteNumber}가 되는 경우의 수를 구하시오.`;
+  document.getElementById('quizAnswer').value = '';
+  quizModal.style.display = 'block';
+}
+
+function checkAnswer() {
+  const answer = parseInt(document.getElementById('quizAnswer').value);
+  const correctAnswer = calculateCombinations(currentRouletteNumber);
+  
+  if (answer === correctAnswer) {
+    alert('정답입니다! 주사위를 굴리실 수 있습니다.');
+    quizModal.style.display = 'none';
+    diceButton.disabled = false;
+  } else {
+    alert('틀렸습니다. 다시 시도해주세요.');
+    currentPlayer = currentPlayer === 1 ? 2 : 1;
+    turnIndicator.textContent = `플레이어 ${currentPlayer}의 차례`;
+    quizModal.style.display = 'none';
+  }
+}
+
+function calculateCombinations(sum) {
+  let count = 0;
+  for (let i = 1; i <= 6; i++) {
+    for (let j = 1; j <= 6; j++) {
+      if (i + j === sum) count++;
+    }
+  }
+  return count;
+}
+
+function rollDice() {
+  dice.classList.add('rolling');
+  diceButton.disabled = true;
+  
+  setTimeout(() => {
+    const roll = Math.floor(Math.random() * 6) + 1;
+    dice.textContent = roll;
+    dice.classList.remove('rolling');
+    movePlayer(roll);
+  }, 1000);
+}
+
+function movePlayer(steps) {
+  const currentPosition = currentPlayer === 1 ? currentPositionP1 : currentPositionP2;
+  const player = currentPlayer === 1 ? player1 : player2;
+  const newPosition = Math.min(currentPosition + steps, 29);
+  
+  if (gameBoard.children[currentPosition].contains(player)) {
+    gameBoard.children[currentPosition].removeChild(player);
+  }
+  
+  gameBoard.children[newPosition].appendChild(player);
+  
+  if (currentPlayer === 1) {
+    currentPositionP1 = newPosition;
+  } else {
+    currentPositionP2 = newPosition;
+  }
+  
+  if (newPosition === 29) {
+    const winModal = document.getElementById('winModal');
+    const winText = document.getElementById('winText');
+    winText.textContent = `플레이어 ${currentPlayer}가 승리했습니다!`;
+    winModal.style.display = 'block';
+  } else {
+    currentPlayer = currentPlayer === 1 ? 2 : 1;
+    turnIndicator.textContent = `플레이어 ${currentPlayer}의 차례`;
+  }
+}
+
+function resetGame() {
+  document.getElementById('winModal').style.display = 'none';
+  currentPositionP1 = 0;
+  currentPositionP2 = 0;
+  currentPlayer = 1;
+  
+  if (player1.parentNode) {
+    player1.parentNode.removeChild(player1);
+  }
+  if (player2.parentNode) {
+    player2.parentNode.removeChild(player2);
+  }
+  
+  gameBoard.children[0].appendChild(player1);
+  gameBoard.children[0].appendChild(player2);
+  
+  turnIndicator.textContent = "플레이어 1의 차례";
+  roulette.textContent = "?";
+  dice.textContent = "?";
+  diceButton.disabled = true;
+  quizModal.style.display = 'none';
+}
+
+createBoard();
+</script>
+</body></html>
